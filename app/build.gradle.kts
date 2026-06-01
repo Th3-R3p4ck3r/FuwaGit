@@ -1,18 +1,9 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-}
-
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { load(it) }
-    }
 }
 
 android {
@@ -29,35 +20,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        create("mirukey") {
-            val path = localProperties.getProperty("RELEASE_STORE_FILE")
-            if (path != null) {
-                storeFile = file(path)
-                storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
-                keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
-                keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
-            }
-        }
-    }
-
-
-
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("mirukey")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
-
-        debug {
-            signingConfig = signingConfigs.getByName("mirukey")
-        }
-
     }
 
     compileOptions {
@@ -69,6 +40,12 @@ android {
         compose = true
         buildConfig = true
     }
+
+    androidResources {
+        @Suppress("UnstableApiUsage")
+        generateLocaleConfig = true
+    }
+
 }
 
 java {

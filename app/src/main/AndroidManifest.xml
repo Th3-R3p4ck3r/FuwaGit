@@ -20,7 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FuwaGit"
         android:requestLegacyExternalStorage="true"
-        android:localeConfig="@xml/locales_config"
         tools:targetApi="33">
         <activity
             android:name=".MainActivity"
