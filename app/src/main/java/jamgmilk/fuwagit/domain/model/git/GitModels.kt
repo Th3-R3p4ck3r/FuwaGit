@@ -27,7 +27,7 @@ data class GitCommit(
     val formattedTimestamp: String
         get() {
             val sdf = DATE_FORMAT.get()
-            return sdf.format(java.util.Date(timestamp))
+            return sdf?.format(java.util.Date(timestamp)) ?: timestamp.toString()
         }
 
     val authorDisplayName: String get() {

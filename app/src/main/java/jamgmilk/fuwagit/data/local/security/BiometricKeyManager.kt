@@ -60,7 +60,16 @@ class BiometricKeyManager @Inject constructor(
                 .setKeySize(256)
                 .setUserAuthenticationRequired(true)
                 .setInvalidatedByBiometricEnrollment(true)
-                .setUserAuthenticationValidityDurationSeconds(-1)
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                builder.setUserAuthenticationParameters(
+                    0,
+                    android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                builder.setUserAuthenticationValidityDurationSeconds(-1)
+            }
 
             keyGenerator.init(builder.build())
             keyGenerator.generateKey()
