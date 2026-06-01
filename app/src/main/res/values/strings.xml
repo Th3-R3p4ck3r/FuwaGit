@@ -281,7 +281,6 @@
 
     <!-- ========== Credentials Screen ========== -->
     <string name="credentials_screen_title">Credentials</string>
-    <string name="credentials_setup_master_password">Set Master Password</string>
     <string name="credentials_setup_description">Create a master password to protect your sensitive credentials.</string>
     <string name="credentials_password_label">Password</string>
     <string name="credentials_password_placeholder">At least 6 characters</string>
@@ -313,14 +312,11 @@
     <string name="credentials_password_pat_label">Password / PAT</string>
     <string name="credentials_show_hide">Show</string>
     <string name="credentials_hide">Hide</string>
-    <string name="credentials_change_master_password">Change Master Password</string>
     <string name="credentials_change_password_description">Enter your current password and set a new one. This will also disable biometric unlock if enabled.</string>
     <string name="credentials_current_password_label">Current Password</string>
     <string name="credentials_new_password_label">New Password</string>
     <string name="credentials_confirm_new_password_label">Confirm New Password</string>
     <string name="credentials_change_password">Change Password</string>
-    <string name="credentials_setup_master_password_full">Set Master Password</string>
-    <string name="credentials_setup_full_description">Create a master password to protect your sensitive credentials. You\'ll need this password to view passwords and private keys.</string>
     <string name="credentials_master_password_set_successfully">Master password has been set</string>
     <string name="credentials_generate_ssh_key">Generate SSH Key</string>
     <string name="credentials_key_name_label">Key Name</string>

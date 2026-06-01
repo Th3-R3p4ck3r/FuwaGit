@@ -248,7 +248,6 @@
     <string name="branches_rebase_confirm">REBASE</string>
 
     <!-- ========== Credentials Screen ========== -->
-    <string name="credentials_setup_master_password">设置主密码</string>
     <string name="credentials_screen_title">凭据</string>
     <string name="credentials_setup_description">创建主密码以保护您的敏感凭据。</string>
     <string name="credentials_password_label">密码</string>
@@ -280,13 +279,10 @@
     <string name="credentials_password_pat_label">密码/个人访问令牌</string>
     <string name="credentials_show_hide">显示</string>
     <string name="credentials_hide">隐藏</string>
-    <string name="credentials_change_master_password">更改主密码</string>
     <string name="credentials_change_password_description">输入当前密码并设置新密码。如果启用了生物识别解锁，此操作也会将其禁用。</string>
     <string name="credentials_current_password_label">当前密码</string>
     <string name="credentials_new_password_label">新密码</string>
     <string name="credentials_confirm_new_password_label">确认新密码</string>
-    <string name="credentials_setup_master_password_full">设置主密码</string>
-    <string name="credentials_setup_full_description">创建主密码以保护您的敏感凭据。您需要此密码来查看密码和私钥。</string>
     <string name="credentials_generate_ssh_key">生成 SSH 密钥</string>
     <string name="credentials_key_name_label">密钥名称</string>
     <string name="credentials_key_name_placeholder">我的密钥</string>
