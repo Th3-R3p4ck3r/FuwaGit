@@ -29,7 +29,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-cleanup: 'false'
+          cache-cleanup: 'never'
 
       - name: Fix gradlew permissions
         run: chmod +x ./gradlew
@@ -61,7 +61,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-cleanup: 'false'
+          cache-cleanup: 'never'
 
       - name: Fix gradlew permissions
         run: chmod +x ./gradlew
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-cleanup: 'false'
+          cache-cleanup: 'never'
 
       - name: Fix gradlew permissions
         run: chmod +x ./gradlew
@@ -127,7 +127,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-cleanup: 'false'
+          cache-cleanup: 'never'
 
       - name: Fix gradlew permissions
         run: chmod +x ./gradlew
