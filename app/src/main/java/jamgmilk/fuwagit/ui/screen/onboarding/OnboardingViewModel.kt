@@ -89,7 +89,7 @@ class OnboardingViewModel @Inject constructor(
         _uiState.update { it.copy(enableBiometric = enable) }
     }
 
-    fun enableBiometricIfNeeded(
+    private suspend fun enableBiometricIfNeeded(
         activity: FragmentActivity,
         title: String,
         subtitle: String,
@@ -97,17 +97,15 @@ class OnboardingViewModel @Inject constructor(
     ) {
         if (!_uiState.value.enableBiometric) return
 
-        viewModelScope.launch {
-            credentialFacade.enableBiometric(
-                activity = activity,
-                title = title,
-                subtitle = subtitle,
-                negativeButtonText = negativeButtonText
-            ).onSuccess {
-                _uiState.update { it.copy(isBiometricSetupComplete = true) }
-            }.onError { e ->
-                _uiState.update { it.copy(biometricSetupError = e.message) }
-            }
+        credentialFacade.enableBiometric(
+            activity = activity,
+            title = title,
+            subtitle = subtitle,
+            negativeButtonText = negativeButtonText
+        ).onSuccess {
+            _uiState.update { it.copy(isBiometricSetupComplete = true) }
+        }.onError { e ->
+            _uiState.update { it.copy(biometricSetupError = e.message) }
         }
     }
 
@@ -147,9 +145,8 @@ class OnboardingViewModel @Inject constructor(
                     _uiState.update { it.copy(isSettingPassword = false) }
                     if (state.enableBiometric) {
                         enableBiometricIfNeeded(activity, biometricTitle, biometricSubtitle, biometricNegativeButtonText)
-                    } else {
-                        nextStep()
                     }
+                    nextStep()
                 }
                 .onError { e ->
                     _uiState.update { it.copy(isSettingPassword = false, passwordError = e.message) }

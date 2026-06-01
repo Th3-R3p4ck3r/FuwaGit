@@ -279,13 +279,8 @@ fun SettingsScreen(
                         }
                     }
                 } else {
-                    if (!credentialsUiState.isDecryptionUnlocked && credentialsUiState.isBiometricEnabled) {
-                        if (BuildConfig.DEBUG) Log.d(TAG, "Already enabled but locked, showing unlock dialog to unlock vault")
-                        credentialsViewModel.showUnlockDialog()
-                    } else {
-                        if (BuildConfig.DEBUG) Log.d(TAG, "Disabling biometric")
-                        credentialsViewModel.disableBiometric()
-                    }
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Disabling biometric")
+                    credentialsViewModel.disableBiometric()
                 }
             },
             autoLockTimeout = settingsUiState.autoLockTimeout,
