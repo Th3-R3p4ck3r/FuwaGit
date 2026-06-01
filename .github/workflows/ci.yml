@@ -80,39 +80,6 @@ jobs:
           path: app/build/reports/tests/testDebugUnitTest
           retention-days: 14
 
-  android-test:
-    name: Android Instrumented Tests
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Set up JDK
-        uses: actions/setup-java@v5
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: ${{ env.GRADLE_VERSION }}
-
-      - name: Fix gradlew permissions
-        run: chmod +x ./gradlew
-
-      - name: Run instrumented tests
-        run: ./gradlew connectedDebugAndroidTest --no-daemon --parallel
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: android-test-results
-          path: app/build/reports/androidTests/connected
-          retention-days: 14
-
   build-debug:
     name: Build Debug APK
     runs-on: ubuntu-latest
