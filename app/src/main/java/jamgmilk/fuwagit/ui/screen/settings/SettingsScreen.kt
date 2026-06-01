@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -83,6 +84,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
@@ -90,6 +92,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -109,6 +112,7 @@ import jamgmilk.fuwagit.ui.components.FilePickerDialog
 import jamgmilk.fuwagit.ui.components.ScreenTemplate
 import jamgmilk.fuwagit.ui.screen.credentials.CredentialStoreViewModel
 import jamgmilk.fuwagit.ui.screen.credentials.UnlockDialog
+import jamgmilk.fuwagit.ui.theme.AppShapes
 import jamgmilk.fuwagit.util.CrashLogManager
 import jamgmilk.fuwagit.util.LanguageManager
 import kotlinx.coroutines.delay
@@ -184,17 +188,17 @@ fun SettingsScreen(
         credentialsViewModel.initialize()
     }
 
-    var previousMasterPasswordSet by remember { mutableStateOf(credentialsUiState.isMasterPasswordSet) }
+    var navigatedToMasterPassword by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(credentialsUiState.isMasterPasswordSet) {
-        if (!previousMasterPasswordSet && credentialsUiState.isMasterPasswordSet) {
+        if (navigatedToMasterPassword && credentialsUiState.isMasterPasswordSet) {
+            navigatedToMasterPassword = false
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = credentialsMasterPasswordSetSuccessfully
                 )
             }
         }
-        previousMasterPasswordSet = credentialsUiState.isMasterPasswordSet
     }
 
     LaunchedEffect(Unit) {
@@ -255,6 +259,7 @@ fun SettingsScreen(
                 }
             },
             onMasterPasswordClick = {
+                navigatedToMasterPassword = true
                 onNavigateToMasterPassword()
             },
             biometricEnabled = credentialsUiState.isBiometricEnabled,
@@ -1774,6 +1779,14 @@ private fun AppearanceSettingsCard(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             }
 
+            val languageOptions = remember {
+                listOf(
+                    "system" to R.string.settings_language_system,
+                    "zh-Hans" to R.string.settings_language_zh_cn,
+                    "en" to R.string.settings_language_en
+                )
+            }
+
             ExpandableSettingsItem(
                 title = stringResource(R.string.settings_language),
                 subtitle = languageLabel,
@@ -1784,37 +1797,34 @@ private fun AppearanceSettingsCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                        .padding(16.dp, 4.dp, 16.dp, 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    val languageOptions = listOf(
-                        "system" to stringResource(R.string.settings_language_system),
-                        "zh-Hans" to stringResource(R.string.settings_language_zh_cn),
-                        "en" to stringResource(R.string.settings_language_en)
-                    )
+                    languageOptions.forEach { (value, labelRes) ->
+                        val isSelected = language == value
 
-                    languageOptions.forEach { (value, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    onLanguageChange(value)
-                                    languageExpanded = false
-                                }
-                                .padding(vertical = 2.dp, horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .clip(AppShapes.small)
+                                .selectable(
+                                    selected = isSelected,
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        onLanguageChange(value)
+                                        languageExpanded = false
+                                    }
+                                )
+                                .padding(vertical = 12.dp, horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             RadioButton(
-                                selected = language == value,
-                                onClick = {
-                                    onLanguageChange(value)
-                                    languageExpanded = false
-                                }
+                                selected = isSelected,
+                                onClick = null
                             )
-                            Spacer(Modifier.width(8.dp))
                             Text(
-                                text = label,
+                                text = stringResource(labelRes),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }

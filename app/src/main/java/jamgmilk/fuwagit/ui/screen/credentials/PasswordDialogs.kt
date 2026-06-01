@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,13 +48,6 @@ fun UnlockDialog(
 ) {
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
-    var biometricError by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(biometricEnabled) {
-        if (biometricEnabled) {
-            onUnlockWithBiometric()
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -72,7 +64,6 @@ fun UnlockDialog(
                 )
                 if (biometricEnabled) {
                     IconButton(onClick = {
-                        biometricError = null
                         onUnlockWithBiometric()
                     }) {
                         Icon(

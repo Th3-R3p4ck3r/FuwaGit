@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jamgmilk.fuwagit.core.result.AppException
 import jamgmilk.fuwagit.domain.usecase.credential.CredentialStoreFacade
+import jamgmilk.fuwagit.ui.state.CredentialSessionManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -38,7 +39,8 @@ data class MasterPasswordUiState(
 
 @HiltViewModel
 class MasterPasswordViewModel @Inject constructor(
-    private val credentialFacade: CredentialStoreFacade
+    private val credentialFacade: CredentialStoreFacade,
+    private val sessionManager: CredentialSessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MasterPasswordUiState())
@@ -61,7 +63,16 @@ class MasterPasswordViewModel @Inject constructor(
         }
     }
 
-    fun setupPasswordAndContinue(password: String, confirmPassword: String, hint: String?) {
+    fun setupPasswordAndContinue(
+        password: String,
+        confirmPassword: String,
+        hint: String?,
+        biometricEnabled: Boolean = false,
+        activity: FragmentActivity? = null,
+        biometricTitle: String = "",
+        biometricSubtitle: String = "",
+        biometricNegativeButtonText: String = ""
+    ) {
         if (password != confirmPassword) {
             _uiState.update { it.copy(error = "Passwords do not match") }
             return
@@ -76,14 +87,27 @@ class MasterPasswordViewModel @Inject constructor(
 
             credentialFacade.setupMasterPassword(password, hint)
                 .onSuccess {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isMasterPasswordSet = true,
-                            isComplete = true
+                    if (biometricEnabled && activity != null) {
+                        credentialFacade.enableBiometric(
+                            activity = activity,
+                            title = biometricTitle,
+                            subtitle = biometricSubtitle,
+                            negativeButtonText = biometricNegativeButtonText
                         )
+                            .onSuccess {
+                                finishPasswordSetup(biometricEnabled = true)
+                            }
+                            .onError { e ->
+                                _uiState.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        error = e.message ?: "Biometric setup failed"
+                                    )
+                                }
+                            }
+                    } else {
+                        finishPasswordSetup(biometricEnabled = false)
                     }
-                    _events.emit(MasterPasswordEvent.SetupSuccess)
                 }
                 .onError { e ->
                     _uiState.update {
@@ -95,6 +119,19 @@ class MasterPasswordViewModel @Inject constructor(
                     _events.emit(MasterPasswordEvent.Error(e.message ?: "Setup failed"))
                 }
         }
+    }
+
+    private suspend fun finishPasswordSetup(biometricEnabled: Boolean) {
+        sessionManager.reloadConfig()
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                isMasterPasswordSet = true,
+                isBiometricEnabled = biometricEnabled,
+                isComplete = true
+            )
+        }
+        _events.emit(MasterPasswordEvent.SetupSuccess)
     }
 
     fun enableBiometric(
@@ -144,7 +181,7 @@ class MasterPasswordViewModel @Inject constructor(
                     if (wasBiometricEnabled && !biometricEnabled) {
                         credentialFacade.disableBiometric()
                         finishPasswordChange(hint = hint, biometricEnabled = false)
-                    } else if (biometricEnabled) {
+                    } else if (!wasBiometricEnabled && biometricEnabled) {
                         credentialFacade.enableBiometric(
                             activity = activity,
                             title = biometricTitle,
@@ -191,6 +228,7 @@ class MasterPasswordViewModel @Inject constructor(
     }
 
     private suspend fun finishPasswordChange(hint: String?, biometricEnabled: Boolean) {
+        sessionManager.reloadConfig()
         _uiState.update {
             it.copy(
                 isLoading = false,

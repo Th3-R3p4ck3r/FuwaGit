@@ -37,9 +37,7 @@ data class OnboardingUiState(
     val enableBiometric: Boolean = false,
     val isSettingPassword: Boolean = false,
     val passwordError: String? = null,
-    val isSavingConfig: Boolean = false,
-    val isBiometricSetupComplete: Boolean = false,
-    val biometricSetupError: String? = null
+    val isSavingConfig: Boolean = false
 )
 
 @HiltViewModel
@@ -104,11 +102,7 @@ class OnboardingViewModel @Inject constructor(
             title = title,
             subtitle = subtitle,
             negativeButtonText = negativeButtonText
-        ).onSuccess {
-            _uiState.update { it.copy(isBiometricSetupComplete = true) }
-        }.onError { e ->
-            _uiState.update { it.copy(biometricSetupError = e.message) }
-        }
+        )
     }
 
     fun updateUserName(name: String) {
@@ -144,11 +138,11 @@ class OnboardingViewModel @Inject constructor(
             credentialFacade.setupMasterPassword(state.password, state.passwordHint.ifBlank { null })
                 .onSuccess {
                     clearSensitiveData()
-                    sessionManager.reloadConfig()
                     _uiState.update { it.copy(isSettingPassword = false) }
                     if (state.enableBiometric) {
                         enableBiometricIfNeeded(activity, biometricTitle, biometricSubtitle, biometricNegativeButtonText)
                     }
+                    sessionManager.reloadConfig()
                     nextStep()
                 }
                 .onError { e ->

@@ -108,18 +108,26 @@ class CredentialSessionManager @Inject constructor(
     }
 
     private fun onVaultUnlocked() {
+        loadCachedConfig()
         _sessionState.value = _sessionState.value.copy(
             showUnlockDialog = false,
-            isUnlocked = true
+            isUnlocked = true,
+            isMasterPasswordSet = cachedIsMasterPasswordSet,
+            isBiometricEnabled = cachedIsBiometricEnabled,
+            passwordHint = cachedPasswordHint
         )
         startAutoLockTimer()
     }
 
     private fun onVaultLocked() {
+        loadCachedConfig()
         cancelAutoLockTimer()
         _sessionState.value = _sessionState.value.copy(
             showUnlockDialog = false,
-            isUnlocked = false
+            isUnlocked = false,
+            isMasterPasswordSet = cachedIsMasterPasswordSet,
+            isBiometricEnabled = cachedIsBiometricEnabled,
+            passwordHint = cachedPasswordHint
         )
     }
 

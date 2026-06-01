@@ -112,8 +112,17 @@ fun MasterPasswordScreen(
                 biometricTitle = biometricTitle,
                 biometricSubtitle = biometricSubtitle,
                 biometricNegativeButtonText = biometricNegativeButtonText,
-                onSetup = { password, confirmPassword, hint ->
-                    viewModel.setupPasswordAndContinue(password, confirmPassword, hint)
+                onSetup = { password, confirmPassword, hint, biometricEnabled ->
+                    viewModel.setupPasswordAndContinue(
+                        password,
+                        confirmPassword,
+                        hint,
+                        biometricEnabled,
+                        activity = activity,
+                        biometricTitle = biometricTitle,
+                        biometricSubtitle = biometricSubtitle,
+                        biometricNegativeButtonText = biometricNegativeButtonText
+                    )
                 },
                 onChange = { oldPassword, newPassword, confirmPassword, hint, biometricEnabled ->
                     viewModel.changeMasterPassword(
@@ -127,19 +136,6 @@ fun MasterPasswordScreen(
                         biometricSubtitle = biometricSubtitle,
                         biometricNegativeButtonText = biometricNegativeButtonText
                     )
-                },
-                onEnableBiometric = {
-                    activity?.let {
-                        viewModel.enableBiometric(
-                            it,
-                            biometricTitle,
-                            biometricSubtitle,
-                            biometricNegativeButtonText
-                        )
-                    }
-                },
-                onDisableBiometric = {
-                    viewModel.disableBiometric()
                 },
                 onClearError = {
                     viewModel.clearError()
@@ -160,7 +156,7 @@ private fun MasterPasswordContent(
     biometricTitle: String,
     biometricSubtitle: String,
     biometricNegativeButtonText: String,
-    onSetup: (password: String, confirmPassword: String, hint: String?) -> Unit,
+    onSetup: (password: String, confirmPassword: String, hint: String?, biometricEnabled: Boolean) -> Unit,
     onChange: (
         oldPassword: String,
         newPassword: String,
@@ -168,8 +164,6 @@ private fun MasterPasswordContent(
         hint: String?,
         biometricEnabled: Boolean
     ) -> Unit,
-    onEnableBiometric: () -> Unit,
-    onDisableBiometric: () -> Unit,
     onClearError: () -> Unit,
     onComplete: () -> Unit
 ) {
@@ -404,17 +398,9 @@ private fun MasterPasswordContent(
         Spacer(Modifier.height(16.dp))
 
         BiometricUnlockCard(
-            isBiometricEnabled = if (isSetupMode) isBiometricEnabled else biometricEnabledSelection,
+            isBiometricEnabled = biometricEnabledSelection,
             onCheckedChange = { enabled ->
-                if (isSetupMode) {
-                    if (enabled) {
-                        onEnableBiometric()
-                    } else {
-                        onDisableBiometric()
-                    }
-                } else {
-                    biometricEnabledSelection = enabled
-                }
+                biometricEnabledSelection = enabled
             }
         )
 
@@ -423,7 +409,7 @@ private fun MasterPasswordContent(
         Button(
             onClick = {
                 if (isSetupMode) {
-                    onSetup(password, confirmPassword, hint.ifBlank { null })
+                    onSetup(password, confirmPassword, hint.ifBlank { null }, biometricEnabledSelection)
                 } else {
                     onChange(
                         oldPassword,

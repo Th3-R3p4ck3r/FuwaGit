@@ -139,36 +139,7 @@ class MasterKeyManager @Inject constructor(
 
                 newDerivedKey.secureZero()
                 masterKey.encoded?.let { java.util.Arrays.fill(it, 0.toByte()) }
-
-                if (isBiometricEnabled()) {
-                    disableBiometric()
-                }
-            }
-        }
-    }
-
-    suspend fun enableBiometric(masterKey: SecretKey): Result<Unit> {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                secureCredentialStore.cacheMasterKey(masterKey)
-                prefs.edit {
-                    putBoolean(KEY_BIOMETRIC_ENABLED, true)
-                }
-            }
-        }
-    }
-
-    suspend fun unlockWithBiometric(): Result<SecretKey> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val cachedKey = secureCredentialStore.getCachedMasterKey()
-                if (cachedKey != null) {
-                    Result.success(cachedKey)
-                } else {
-                    Result.failure(Exception("Biometric session expired. Please enter your password."))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
+                Unit
             }
         }
     }
@@ -176,6 +147,7 @@ class MasterKeyManager @Inject constructor(
     suspend fun disableBiometric() {
         withContext(Dispatchers.IO) {
             secureCredentialStore.clearCachedMasterKey()
+            clearEncryptedMasterKey()
             prefs.edit {
                 putBoolean(KEY_BIOMETRIC_ENABLED, false)
             }
