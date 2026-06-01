@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jamgmilk.fuwagit.domain.repository.SettingsRepository
 import jamgmilk.fuwagit.domain.usecase.credential.CredentialStoreFacade
+import jamgmilk.fuwagit.ui.state.CredentialSessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,7 +45,8 @@ data class OnboardingUiState(
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val credentialFacade: CredentialStoreFacade
+    private val credentialFacade: CredentialStoreFacade,
+    private val sessionManager: CredentialSessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
@@ -142,6 +144,7 @@ class OnboardingViewModel @Inject constructor(
             credentialFacade.setupMasterPassword(state.password, state.passwordHint.ifBlank { null })
                 .onSuccess {
                     clearSensitiveData()
+                    sessionManager.reloadConfig()
                     _uiState.update { it.copy(isSettingPassword = false) }
                     if (state.enableBiometric) {
                         enableBiometricIfNeeded(activity, biometricTitle, biometricSubtitle, biometricNegativeButtonText)
