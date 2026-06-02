@@ -687,5 +687,8 @@
 
     <!-- ========== Validation Errors ========== -->
     <string name="credentials_not_found">No credentials found</string>
+    <string name="url_validation_invalid_https">Invalid HTTPS URL format</string>
+    <string name="url_validation_invalid_ssh">Invalid SSH format (expected: git@host:path)</string>
+    <string name="url_validation_invalid_protocol">URL must start with https://, http://, git@, ssh://</string>
 
 </resources>

@@ -666,5 +666,8 @@
 
     <!-- ========== Validation Errors ========== -->
     <string name="credentials_not_found">未找到凭据</string>
+    <string name="url_validation_invalid_https">无效的 HTTPS URL 格式</string>
+    <string name="url_validation_invalid_ssh">无效的 SSH 格式（应为：git@host:path）</string>
+    <string name="url_validation_invalid_protocol">URL 必须以 https://、http://、git@、ssh:// 开头</string>
 
 </resources>

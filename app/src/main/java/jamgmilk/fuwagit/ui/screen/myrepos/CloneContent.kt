@@ -220,7 +220,7 @@ internal fun CloneContent(
                 supportingText = {
                     if (validationResult.errorMessage != null) {
                         Text(
-                            text = validationResult.errorMessage!!,
+                            text = stringResource(validationResult.errorMessage!!),
                             color = colors.error
                         )
                     }

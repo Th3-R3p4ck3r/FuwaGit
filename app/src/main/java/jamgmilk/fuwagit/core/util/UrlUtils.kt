@@ -1,12 +1,15 @@
 package jamgmilk.fuwagit.core.util
 
+import androidx.annotation.StringRes
+import jamgmilk.fuwagit.R
+
 object UrlUtils {
 
     data class UrlValidationResult(
         val isValid: Boolean,
         val isSsh: Boolean,
         val isHttps: Boolean,
-        val errorMessage: String? = null
+        @StringRes val errorMessage: Int? = null
     )
 
     fun validateUrl(url: String): UrlValidationResult {
@@ -17,7 +20,7 @@ object UrlUtils {
         return when {
             url.startsWith("https://") || url.startsWith("http://") -> {
                 if (url.contains(" ") || !url.contains(".") || url.length < 10) {
-                    UrlValidationResult(isValid = false, isSsh = false, isHttps = true, errorMessage = "Invalid HTTPS URL format")
+                    UrlValidationResult(isValid = false, isSsh = false, isHttps = true, errorMessage = R.string.url_validation_invalid_https)
                 } else {
                     UrlValidationResult(isValid = true, isSsh = false, isHttps = true)
                 }
@@ -27,14 +30,14 @@ object UrlUtils {
                 if (gitHostPattern.matches(url)) {
                     UrlValidationResult(isValid = true, isSsh = true, isHttps = false)
                 } else {
-                    UrlValidationResult(isValid = false, isSsh = true, isHttps = false, errorMessage = "Invalid SSH format (expected: git@host:path)")
+                    UrlValidationResult(isValid = false, isSsh = true, isHttps = false, errorMessage = R.string.url_validation_invalid_ssh)
                 }
             }
             url.startsWith("ssh://") -> {
                 UrlValidationResult(isValid = true, isSsh = true, isHttps = false)
             }
             else -> {
-                UrlValidationResult(isValid = false, isSsh = false, isHttps = false, errorMessage = "URL must start with https://, http://, git@, ssh://")
+                UrlValidationResult(isValid = false, isSsh = false, isHttps = false, errorMessage = R.string.url_validation_invalid_protocol)
             }
         }
     }

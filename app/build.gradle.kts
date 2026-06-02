@@ -17,7 +17,7 @@ android {
             val keyAliasEnv = System.getenv("RELEASE_KEY_ALIAS")
             val keyPasswordEnv = System.getenv("RELEASE_KEY_PASSWORD")
             if (storeFilePath != null) {
-                storeFile = file(storeFilePath)
+                storeFile = rootProject.file(storeFilePath)
                 storePassword = storePasswordEnv
                 keyAlias = keyAliasEnv
                 keyPassword = keyPasswordEnv
