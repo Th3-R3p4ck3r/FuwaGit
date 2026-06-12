@@ -102,9 +102,10 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     // Third-party Libraries
-    implementation(libs.org.eclipse.jgit)
-    implementation(libs.org.eclipse.jgit.ssh.jsch) {
+    implementation(libs.org.eclipse.jgit) {
         exclude(group = "com.jcraft", module = "jsch")
+        exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+        exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }
     implementation(libs.jsch)
     implementation(libs.bouncycastle)

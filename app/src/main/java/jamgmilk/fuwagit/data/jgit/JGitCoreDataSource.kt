@@ -252,7 +252,7 @@ class JGitCoreDataSource @Inject constructor(
 
             command.setTransportConfigCallback { transport ->
                 if (transport is org.eclipse.jgit.transport.SshTransport) {
-                    transport.sshSessionFactory = object : org.eclipse.jgit.transport.ssh.jsch.JschConfigSessionFactory() {
+                    transport.sshSessionFactory = object : org.eclipse.jgit.transport.JschConfigSessionFactory() {
                         override fun createDefaultJSch(fs: org.eclipse.jgit.util.FS?): com.jcraft.jsch.JSch {
                             val jsch = super.createDefaultJSch(fs)
                             try {
@@ -273,6 +273,10 @@ class JGitCoreDataSource @Inject constructor(
                                 SecurityUtils.zeroBytes(passphraseBytes)
                             }
                             return jsch
+                        }
+
+                        override fun configure(host: org.eclipse.jgit.transport.OpenSshConfig.Host, session: com.jcraft.jsch.Session) {
+                            // No additional configuration needed
                         }
                     }
                 }

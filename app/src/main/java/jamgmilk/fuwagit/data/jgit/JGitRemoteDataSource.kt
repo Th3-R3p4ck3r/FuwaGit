@@ -46,9 +46,6 @@ class JGitRemoteDataSource @Inject constructor(
                 .setDirectory(targetDir)
                 .setCloneAllBranches(options.cloneAllBranches)
 
-            if (options.depth != null && options.depth > 0) {
-                cloneCommand.setDepth(options.depth)
-            }
             if (options.isBare) {
                 cloneCommand.setBare(true)
             }

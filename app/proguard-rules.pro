@@ -66,8 +66,8 @@
 -keep class org.eclipse.jgit.internal.** { *; }
 -keep class org.eclipse.jgit.pgm.** { *; }
 
-# JGit SSH JSCH
--keep class org.eclipse.jgit.transport.ssh.jsch.** { *; }
+# JGit SSH
+-keep class org.eclipse.jgit.transport.JschConfigSessionFactory { *; }
 
 # Apache MINA SSHD (used by JGit SSH)
 -keep class org.apache.sshd.** { *; }
