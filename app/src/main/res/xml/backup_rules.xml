@@ -3,4 +3,6 @@
     <!-- Exclude sensitive credential data and master key wrapping info from older API backup -->
     <exclude domain="file" path="credential_data.json"/>
     <exclude domain="sharedpref" path="credential_key_store.xml"/>
+    <!-- Exclude SSH known hosts (contains server fingerprints) -->
+    <exclude domain="file" path="ssh_known_hosts"/>
 </full-backup-content>
