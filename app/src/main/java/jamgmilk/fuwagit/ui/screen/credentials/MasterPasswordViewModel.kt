@@ -23,8 +23,6 @@ sealed class MasterPasswordEvent {
     data object SetupSuccess : MasterPasswordEvent()
     data object ChangeSuccess : MasterPasswordEvent()
     data class Error(val message: String) : MasterPasswordEvent()
-    data object BiometricEnabled : MasterPasswordEvent()
-    data class BiometricError(val message: String) : MasterPasswordEvent()
 }
 
 @Stable
@@ -134,24 +132,6 @@ class MasterPasswordViewModel @Inject constructor(
         _events.emit(MasterPasswordEvent.SetupSuccess)
     }
 
-    fun enableBiometric(
-        activity: FragmentActivity,
-        title: String,
-        subtitle: String,
-        negativeButtonText: String
-    ) {
-        viewModelScope.launch {
-            credentialFacade.enableBiometric(activity, title, subtitle, negativeButtonText)
-                .onSuccess {
-                    _uiState.update { it.copy(isBiometricEnabled = true) }
-                    _events.emit(MasterPasswordEvent.BiometricEnabled)
-                }
-                .onError { e ->
-                    _events.emit(MasterPasswordEvent.BiometricError(e.message ?: "Biometric error"))
-                }
-        }
-    }
-
     fun changeMasterPassword(
         oldPassword: String,
         newPassword: String,
@@ -216,19 +196,13 @@ class MasterPasswordViewModel @Inject constructor(
         }
     }
 
-    fun disableBiometric() {
-        viewModelScope.launch {
-            credentialFacade.disableBiometric()
-            _uiState.update { it.copy(isBiometricEnabled = false) }
-        }
-    }
-
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
 
     private suspend fun finishPasswordChange(hint: String?, biometricEnabled: Boolean) {
         sessionManager.reloadConfig()
+        sessionManager.notifyPasswordChangeCompleted()
         _uiState.update {
             it.copy(
                 isLoading = false,

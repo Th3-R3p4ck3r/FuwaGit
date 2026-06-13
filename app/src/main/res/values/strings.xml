@@ -284,6 +284,7 @@
     <string name="credentials_setup_description">Create a master password to protect your sensitive credentials.</string>
     <string name="credentials_password_label">Password</string>
     <string name="credentials_password_placeholder">At least 6 characters</string>
+    <string name="onboarding_password_too_short">Password must be at least 6 characters</string>
     <string name="credentials_confirm_password_label">Confirm Password</string>
     <string name="credentials_password_hint_optional">Password Hint (optional)</string>
     <string name="credentials_password_hint_placeholder">Help you remember</string>
@@ -318,6 +319,7 @@
     <string name="credentials_confirm_new_password_label">Confirm New Password</string>
     <string name="credentials_change_password">Change Password</string>
     <string name="credentials_master_password_set_successfully">Master password has been set</string>
+    <string name="credentials_master_password_changed_successfully">Master password has been changed</string>
     <string name="credentials_generate_ssh_key">Generate SSH Key</string>
     <string name="credentials_key_name_label">Key Name</string>
     <string name="credentials_key_name_placeholder">My Key</string>
@@ -634,6 +636,8 @@
 
     <!-- File Picker Dialog -->
     <string name="filepicker_cannot_access">Cannot access this directory</string>
+    <string name="filepicker_permission_required">Storage permission required to browse directories</string>
+    <string name="filepicker_grant_permission">Grant Permission</string>
     <string name="filepicker_empty_folder">Empty folder</string>
     <string name="filepicker_create_folder">Create Folder</string>
     <string name="filepicker_folder_name">Folder name</string>

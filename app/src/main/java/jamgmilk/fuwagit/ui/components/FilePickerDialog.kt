@@ -1,6 +1,14 @@
 package jamgmilk.fuwagit.ui.components
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Environment
+import android.provider.Settings
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -47,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +63,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import jamgmilk.fuwagit.BuildConfig
 import jamgmilk.fuwagit.R
 import jamgmilk.fuwagit.core.util.PathUtils
@@ -126,10 +140,12 @@ fun FilePickerDialog(
         externalStorage
     }
 
+    val context = LocalContext.current
     var currentPath by remember { mutableStateOf(safeInitialPath) }
     var files by remember { mutableStateOf<List<FileItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    var isPermissionError by remember { mutableStateOf(false) }
     var targetPath by remember { mutableStateOf<String?>(null) }
     var showCreateFolderDialog by remember { mutableStateOf(false) }
     var newFolderName by remember { mutableStateOf("") }
@@ -137,14 +153,46 @@ fun FilePickerDialog(
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val strCannotAccess = stringResource(R.string.filepicker_cannot_access)
+    val strPermissionRequired = stringResource(R.string.filepicker_permission_required)
+    val strGrantPermission = stringResource(R.string.filepicker_grant_permission)
     val strCreateFolder = stringResource(R.string.filepicker_create_folder)
     val strFolderName = stringResource(R.string.filepicker_folder_name)
     val strInvalidFolderName = stringResource(R.string.filepicker_invalid_folder_name)
+
+    fun hasStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    var permissionJustGranted by remember { mutableStateOf(false) }
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {
+            if (it) permissionJustGranted = true
+        }
+    )
+
+    fun requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            context.startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                data = "package:${context.packageName}".toUri()
+            })
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    }
 
     fun loadFiles(path: String) {
         targetPath = path
         isLoading = true
         error = null
+        isPermissionError = false
         scope.launch(Dispatchers.IO) {
             try {
                 val dir = File(path)
@@ -177,14 +225,16 @@ fun FilePickerDialog(
                     if (targetPath == path) {
                         files = emptyList()
                         isLoading = false
-                        error = strCannotAccess
+                        isPermissionError = !hasStoragePermission()
+                        error = if (isPermissionError) strPermissionRequired else strCannotAccess
                     }
                 }
             } catch (e: Exception) {
                 if (targetPath == path) {
                     files = emptyList()
                     isLoading = false
-                    error = e.message ?: "Unknown error"
+                    isPermissionError = !hasStoragePermission()
+                    error = if (isPermissionError) strPermissionRequired else (e.message ?: "Unknown error")
                 }
             }
         }
@@ -223,6 +273,26 @@ fun FilePickerDialog(
 
     LaunchedEffect(currentPath) {
         loadFiles(currentPath)
+    }
+
+    LaunchedEffect(permissionJustGranted) {
+        if (permissionJustGranted) {
+            permissionJustGranted = false
+            loadFiles(currentPath)
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
+            override fun onStateChanged(source: androidx.lifecycle.LifecycleOwner, event: Lifecycle.Event) {
+                if (event == Lifecycle.Event.ON_RESUME && isPermissionError) {
+                    if (hasStoragePermission()) {
+                        loadFiles(currentPath)
+                    }
+                }
+            }
+        })
     }
 
     Dialog(
@@ -356,15 +426,32 @@ fun FilePickerDialog(
                             )
                         }
                         error != null -> {
-                            Text(
-                                text = error ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colors.error,
-                                textAlign = TextAlign.Center,
+                            Column(
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .padding(16.dp)
-                            )
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = error ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.error,
+                                    textAlign = TextAlign.Center
+                                )
+                                if (isPermissionError) {
+                                    Spacer(Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { requestStoragePermission() },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = colors.primary,
+                                            contentColor = colors.onPrimary
+                                        ),
+                                        shape = AppShapes.extraSmall
+                                    ) {
+                                        Text(strGrantPermission)
+                                    }
+                                }
+                            }
                         }
                         files.isEmpty() -> {
                             Text(

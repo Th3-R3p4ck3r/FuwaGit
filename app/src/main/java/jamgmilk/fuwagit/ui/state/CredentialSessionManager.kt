@@ -22,7 +22,8 @@ data class CredentialSessionState(
     val isMasterPasswordSet: Boolean = false,
     val isBiometricEnabled: Boolean = false,
     val passwordHint: String? = null,
-    val showUnlockDialog: Boolean = false
+    val showUnlockDialog: Boolean = false,
+    val passwordChangeCompleted: Boolean = false
 )
 
 @Singleton
@@ -155,5 +156,13 @@ class CredentialSessionManager @Inject constructor(
 
     fun dismissUnlockDialog() {
         _sessionState.value = _sessionState.value.copy(showUnlockDialog = false)
+    }
+
+    fun notifyPasswordChangeCompleted() {
+        _sessionState.value = _sessionState.value.copy(passwordChangeCompleted = true)
+    }
+
+    fun consumePasswordChangeCompleted() {
+        _sessionState.value = _sessionState.value.copy(passwordChangeCompleted = false)
     }
 }

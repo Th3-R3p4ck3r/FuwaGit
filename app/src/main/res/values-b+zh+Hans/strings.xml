@@ -272,6 +272,7 @@
     <string name="credentials_changing">正在更改…</string>
     <string name="credentials_change_password">更改密码</string>
     <string name="credentials_master_password_set_successfully">主密码已设置</string>
+    <string name="credentials_master_password_changed_successfully">主密码已更改</string>
     <string name="credentials_add_https_credential">添加 HTTPS 凭据</string>
     <string name="credentials_host_label">主机</string>
     <string name="credentials_host_placeholder">github.com</string>
@@ -613,6 +614,8 @@
 
     <!-- File Picker Dialog -->
     <string name="filepicker_cannot_access">无法访问此目录</string>
+    <string name="filepicker_permission_required">需要存储权限才能浏览目录</string>
+    <string name="filepicker_grant_permission">授予权限</string>
     <string name="filepicker_empty_folder">空文件夹</string>
     <string name="filepicker_create_folder">创建文件夹</string>
     <string name="filepicker_folder_name">文件夹名称</string>
@@ -649,6 +652,7 @@
     <string name="onboarding_master_password_title">保护您的凭据</string>
     <string name="onboarding_master_password_subtitle">设置主密码以加密您的 HTTPS 密码和 SSH 密钥。</string>
     <string name="onboarding_password_placeholder">至少 6 个字符</string>
+    <string name="onboarding_password_too_short">密码至少需要 6 个字符</string>
     <string name="onboarding_biometric_title">生物识别解锁</string>
     <string name="onboarding_biometric_subtitle">使用指纹快速解锁凭据</string>
     <string name="onboarding_skip">跳过</string>

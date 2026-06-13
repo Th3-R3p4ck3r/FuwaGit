@@ -1,11 +1,9 @@
 package jamgmilk.fuwagit.ui.screen.credentials
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,25 +17,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -62,6 +53,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import jamgmilk.fuwagit.R
+import jamgmilk.fuwagit.ui.components.BiometricUnlockCard
+import jamgmilk.fuwagit.ui.components.PasswordHintField
 import jamgmilk.fuwagit.ui.components.SubSettingsTemplate
 
 enum class MasterPasswordMode {
@@ -109,9 +102,6 @@ fun MasterPasswordScreen(
                 isBiometricEnabled = uiState.isBiometricEnabled,
                 error = uiState.error,
                 isLoading = uiState.isLoading,
-                biometricTitle = biometricTitle,
-                biometricSubtitle = biometricSubtitle,
-                biometricNegativeButtonText = biometricNegativeButtonText,
                 onSetup = { password, confirmPassword, hint, biometricEnabled ->
                     viewModel.setupPasswordAndContinue(
                         password,
@@ -139,8 +129,7 @@ fun MasterPasswordScreen(
                 },
                 onClearError = {
                     viewModel.clearError()
-                },
-                onComplete = onBack
+                }
             )
         }
     }
@@ -153,9 +142,6 @@ private fun MasterPasswordContent(
     isBiometricEnabled: Boolean,
     error: String?,
     isLoading: Boolean,
-    biometricTitle: String,
-    biometricSubtitle: String,
-    biometricNegativeButtonText: String,
     onSetup: (password: String, confirmPassword: String, hint: String?, biometricEnabled: Boolean) -> Unit,
     onChange: (
         oldPassword: String,
@@ -164,8 +150,7 @@ private fun MasterPasswordContent(
         hint: String?,
         biometricEnabled: Boolean
     ) -> Unit,
-    onClearError: () -> Unit,
-    onComplete: () -> Unit
+    onClearError: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -368,20 +353,9 @@ private fun MasterPasswordContent(
                 )
             )
 
-            OutlinedTextField(
+            PasswordHintField(
                 value = hint,
-                onValueChange = { hint = it },
-                label = { Text(stringResource(R.string.credentials_password_hint_optional)) },
-                placeholder = { Text(stringResource(R.string.credentials_password_hint_placeholder)) },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colors.primary,
-                    focusedLabelColor = colors.primary,
-                    cursorColor = colors.primary
-                )
+                onValueChange = { hint = it }
             )
 
             error?.let { errorMsg ->
@@ -456,59 +430,4 @@ private fun MasterPasswordContent(
     }
 }
 
-@Composable
-private fun BiometricUnlockCard(
-    isBiometricEnabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    val colors = MaterialTheme.colorScheme
 
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, colors.outlineVariant, RoundedCornerShape(20.dp)),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = colors.surfaceContainerLow),
-        elevation = CardDefaults.elevatedCardElevation(0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = colors.primary.copy(alpha = 0.15f),
-                modifier = Modifier.size(44.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.Fingerprint,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.onboarding_biometric_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = stringResource(R.string.onboarding_biometric_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = isBiometricEnabled,
-                onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(checkedTrackColor = colors.primary)
-            )
-        }
-    }
-}

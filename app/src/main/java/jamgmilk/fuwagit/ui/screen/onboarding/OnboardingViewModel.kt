@@ -124,14 +124,6 @@ class OnboardingViewModel @Inject constructor(
         biometricNegativeButtonText: String
     ) {
         val state = _uiState.value
-        if (state.password.length < 6) {
-            _uiState.update { it.copy(passwordError = "Password must be at least 6 characters") }
-            return
-        }
-        if (state.password != state.confirmPassword) {
-            _uiState.update { it.copy(passwordError = "Passwords do not match") }
-            return
-        }
 
         _uiState.update { it.copy(isSettingPassword = true, passwordError = null) }
         viewModelScope.launch {

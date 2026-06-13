@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -50,8 +49,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,7 +68,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -83,6 +79,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import jamgmilk.fuwagit.R
+import jamgmilk.fuwagit.ui.components.BiometricUnlockCard
+import jamgmilk.fuwagit.ui.components.PasswordField
+import jamgmilk.fuwagit.ui.components.PasswordHintField
 import jamgmilk.fuwagit.ui.navigation.AddRepoTab
 import jamgmilk.fuwagit.ui.theme.AppShapes
 
@@ -161,7 +160,7 @@ fun OnboardingScreen(
         BottomNavigationSlot(
             currentStep = uiState.currentStep,
             isPermissionGranted = isPermissionGranted,
-            isPasswordValid = uiState.password.isNotBlank() && uiState.confirmPassword.isNotBlank() && !uiState.isSettingPassword,
+            isPasswordValid = uiState.password.length >= 6 && uiState.password == uiState.confirmPassword && !uiState.isSettingPassword,
             isSavingConfig = uiState.isSavingConfig,
             isSettingPassword = uiState.isSettingPassword,
             isGitConfigValid = uiState.userName.isNotBlank() && uiState.userEmail.isNotBlank() && uiState.defaultBranch.isNotBlank(),
@@ -655,6 +654,9 @@ private fun MasterPasswordStep(
 ) {
     val colors = MaterialTheme.colorScheme
 
+    val isPasswordTooShort = uiState.password.isNotBlank() && uiState.password.length < 6
+    val isConfirmMismatch = uiState.confirmPassword.isNotBlank() && uiState.password != uiState.confirmPassword
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -665,54 +667,31 @@ private fun MasterPasswordStep(
             subtitle = stringResource(R.string.onboarding_master_password_subtitle)
         )
 
-        OutlinedTextField(
+        PasswordField(
             value = uiState.password,
             onValueChange = onUpdatePassword,
-            label = { Text(stringResource(R.string.credentials_password_label)) },
-            placeholder = { Text(stringResource(R.string.onboarding_password_placeholder)) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colors.primary,
-                focusedLabelColor = colors.primary,
-                cursorColor = colors.primary
-            )
+            label = stringResource(R.string.credentials_password_label),
+            isError = isPasswordTooShort,
+            supportingText = if (isPasswordTooShort) {
+                { Text(stringResource(R.string.onboarding_password_too_short), color = colors.error) }
+            } else null,
+            showVisibilityToggle = false
         )
 
-        OutlinedTextField(
+        PasswordField(
             value = uiState.confirmPassword,
             onValueChange = onUpdateConfirmPassword,
-            label = { Text(stringResource(R.string.credentials_confirm_password_label)) },
-            placeholder = { Text(stringResource(R.string.onboarding_password_placeholder)) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colors.primary,
-                focusedLabelColor = colors.primary,
-                cursorColor = colors.primary
-            )
+            label = stringResource(R.string.credentials_confirm_password_label),
+            isError = isConfirmMismatch,
+            supportingText = if (isConfirmMismatch) {
+                { Text(stringResource(R.string.credentials_passwords_do_not_match), color = colors.error) }
+            } else null,
+            showVisibilityToggle = false
         )
 
-        OutlinedTextField(
+        PasswordHintField(
             value = uiState.passwordHint,
-            onValueChange = onUpdatePasswordHint,
-            label = { Text(stringResource(R.string.credentials_password_hint_optional)) },
-            placeholder = { Text(stringResource(R.string.credentials_password_hint_placeholder)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colors.primary,
-                focusedLabelColor = colors.primary,
-                cursorColor = colors.primary
-            )
+            onValueChange = onUpdatePasswordHint
         )
 
         if (uiState.passwordError != null) {
@@ -737,55 +716,10 @@ private fun MasterPasswordStep(
             }
         }
 
-        ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .border(1.dp, colors.outlineVariant, RoundedCornerShape(20.dp)),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = colors.surfaceContainerLow),
-            elevation = CardDefaults.elevatedCardElevation(0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = colors.primary.copy(alpha = 0.15f),
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Default.Fingerprint,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-                Spacer(Modifier.width(14.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.onboarding_biometric_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.onboarding_biometric_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-                Switch(
-                    checked = uiState.enableBiometric,
-                    onCheckedChange = onUpdateEnableBiometric,
-                    colors = SwitchDefaults.colors(checkedTrackColor = colors.primary)
-                )
-            }
-        }
+        BiometricUnlockCard(
+            isBiometricEnabled = uiState.enableBiometric,
+            onCheckedChange = onUpdateEnableBiometric
+        )
     }
 }
 

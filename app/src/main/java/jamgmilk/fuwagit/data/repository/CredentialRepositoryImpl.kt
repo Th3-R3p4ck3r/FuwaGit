@@ -175,7 +175,10 @@ class CredentialRepositoryImpl @Inject constructor(
 
     override suspend fun changeMasterPassword(oldPassword: String, newPassword: String, hint: String?): AppResult<Unit> {
         return AppResult.catching {
-            masterKeyManager.changeMasterPassword(oldPassword, newPassword).getOrThrow()
+            val result = masterKeyManager.changeMasterPassword(oldPassword, newPassword)
+            if (result.isFailure) {
+                throw AppException.InvalidPassword()
+            }
             if (hint != null) {
                 masterKeyManager.setPasswordHint(hint)
             }

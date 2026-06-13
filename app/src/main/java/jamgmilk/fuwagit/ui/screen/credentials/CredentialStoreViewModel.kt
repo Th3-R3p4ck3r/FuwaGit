@@ -43,7 +43,8 @@ data class CredentialsStoreUiState(
     val sshKeys: List<SshKey> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val exportedData: String? = null
+    val exportedData: String? = null,
+    val passwordChangeCompleted: Boolean = false
 )
 
 @HiltViewModel
@@ -73,7 +74,8 @@ data class CredentialsStoreUiState(
                         isMasterPasswordSet = session.isMasterPasswordSet,
                         isBiometricEnabled = session.isBiometricEnabled,
                         passwordHint = session.passwordHint,
-                        showUnlockDialog = session.showUnlockDialog
+                        showUnlockDialog = session.showUnlockDialog,
+                        passwordChangeCompleted = session.passwordChangeCompleted
                     )
                 }
             }
@@ -245,6 +247,10 @@ data class CredentialsStoreUiState(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun consumePasswordChangeCompleted() {
+        sessionManager.consumePasswordChangeCompleted()
     }
 
     suspend fun getHttpsPassword(uuid: String): String? {

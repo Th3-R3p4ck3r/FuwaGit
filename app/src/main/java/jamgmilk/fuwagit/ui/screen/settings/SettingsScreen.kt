@@ -135,6 +135,7 @@ fun SettingsScreen(
     val credentialsUiState by credentialsViewModel.uiState.collectAsStateWithLifecycle()
 
     val credentialsMasterPasswordSetSuccessfully = stringResource(R.string.credentials_master_password_set_successfully)
+    val credentialsMasterPasswordChangedSuccessfully = stringResource(R.string.credentials_master_password_changed_successfully)
     val biometricEnableTitle = stringResource(R.string.biometric_enable_title)
     val biometricEnableSubtitle = stringResource(R.string.biometric_enable_subtitle)
     val settingsBiometricCancel = stringResource(R.string.settings_biometric_cancel)
@@ -189,13 +190,26 @@ fun SettingsScreen(
     }
 
     var navigatedToMasterPassword by rememberSaveable { mutableStateOf(false) }
+    var wasMasterPasswordSetBeforeNavigation by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(credentialsUiState.isMasterPasswordSet) {
-        if (navigatedToMasterPassword && credentialsUiState.isMasterPasswordSet) {
+        if (navigatedToMasterPassword && credentialsUiState.isMasterPasswordSet && !wasMasterPasswordSetBeforeNavigation) {
             navigatedToMasterPassword = false
+            wasMasterPasswordSetBeforeNavigation = false
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = credentialsMasterPasswordSetSuccessfully
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(credentialsUiState.passwordChangeCompleted) {
+        if (credentialsUiState.passwordChangeCompleted) {
+            credentialsViewModel.consumePasswordChangeCompleted()
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = credentialsMasterPasswordChangedSuccessfully
                 )
             }
         }
@@ -260,6 +274,7 @@ fun SettingsScreen(
             },
             onMasterPasswordClick = {
                 navigatedToMasterPassword = true
+                wasMasterPasswordSetBeforeNavigation = credentialsUiState.isMasterPasswordSet
                 onNavigateToMasterPassword()
             },
             biometricEnabled = credentialsUiState.isBiometricEnabled,
